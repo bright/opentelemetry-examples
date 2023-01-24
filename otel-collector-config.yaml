@@ -1,0 +1,81 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+
+processors:
+  batch:
+
+  attributes:
+    actions:
+      - action: insert
+        key: traceId
+        from_attribute: Trace ID
+      - action: insert
+        key: loki.attribute.labels
+        value: traceId
+
+  resource:
+    attributes:
+      - action: insert
+        key: loki.resource.labels
+        value: service.name
+      - action: insert
+        key: loki.resource.labels
+        value: host.name
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    const_labels:
+      exporter: OLTP
+
+  logging:
+    loglevel: debug
+
+  loki:
+    endpoint: http://grafana.loki:3100/loki/api/v1/push
+    tls:
+      insecure: true
+
+  otlp:
+    endpoint: grafana.tempo:4317
+    tls:
+      insecure: true
+#  zipkin:
+#    endpoint: "http://zipkin-all-in-one:9411/api/v2/spans"
+#    format: proto
+#
+#  jaeger:
+#    endpoint: jaeger-all-in-one:14250
+#    tls:
+#      insecure: true
+
+
+service:
+  extensions: [ pprof, zpages, health_check ]
+  telemetry:
+    logs:
+      level: "debug"
+  pipelines:
+    traces:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ otlp ]
+    metrics:
+      receivers: [ otlp ]
+      processors: [ ]
+      exporters: [ logging, prometheus]
+    logs:
+      receivers: [ otlp ]
+      processors: [ attributes, resource ]
+      exporters: [ loki ]
+
+
+
+extensions:
+  health_check:
+  pprof:
+    endpoint: :1888
+  zpages:
+    endpoint: :55679

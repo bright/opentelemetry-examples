@@ -1,0 +1,8 @@
+POST localhost:8080/greetings
+Content-Type: application/json
+
+{
+  "message": "Welcome to Ya!vaConf at {{$timestamp}}",
+  "recipient": "Great Audience ❤️",
+  "sender": "Piotr"
+}

@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    function:
+      definition: greetRecipientWithSms;greetRecipientWithEmail
+    stream:
+      bindings:
+        greetRecipientWithSms-in-0:
+          destination: greetedRecipientEvents-out-0
+        greetRecipientWithEmail-in-0:
+          destination: greetedRecipientEvents-out-0
