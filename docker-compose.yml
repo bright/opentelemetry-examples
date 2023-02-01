@@ -1,6 +1,6 @@
 services:
   processor:
-    image: gradle:jdk18
+    image: gradle:7.5-jdk17-focal
     volumes:
       - ./spring/processor:/usr/app
     working_dir: /usr/app
@@ -10,13 +10,16 @@ services:
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
       SPRING_DATA_MONGODB_HOST: processor.mongo
-      BOOT_RUN_JAVA_OPTS: -javaagent:build/opentelemetry-javaagent-1.18.0.jar -Dotel.instrumentation.logback-appender.experimental-log-attributes=true
+      BOOT_RUN_JAVA_OPTS: -javaagent:build/opentelemetry-javaagent-1.22.0.jar -Dotel.instrumentation.logback-appender.experimental-log-attributes=true -Dotel.javaagent.extensions=build/opentelemetry-extension-kotlin-1.22.0.jar
       OTEL_SERVICE_NAME: processor
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel.collector:4317
-      OTEL_LOGS_EXPORTER: otlp
+      OTEL_LOGS_EXPORTER: none
+      OTEL_TRACES_EXPORTER: otlp
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://otel.collector:4317
+      OTEL_METRICS_EXPORTER: none
+      GRADLE_HOME: /usr/app
   web:
-    image: gradle:jdk18
+    image: gradle:7.5-jdk17-focal
     volumes:
       - ./spring/web:/usr/app
     working_dir: /usr/app
@@ -25,15 +28,18 @@ services:
       - bootRun
     environment:
       SPRING_KAFKA_BOOTSTRAP_SERVERS: broker:29092
-      BOOT_RUN_JAVA_OPTS: -javaagent:build/opentelemetry-javaagent-1.18.0.jar -Dotel.instrumentation.logback-appender.experimental-log-attributes=true
+      BOOT_RUN_JAVA_OPTS: -javaagent:build/opentelemetry-javaagent-1.22.0.jar -Dotel.instrumentation.logback-appender.experimental-log-attributes=true -Dotel.javaagent.extensions=build/opentelemetry-extension-kotlin-1.22.0.jar
       OTEL_SERVICE_NAME: web
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel.collector:4317
-      OTEL_LOGS_EXPORTER: otlp
       OTEL_EXPORTER_OTLP_LOGS_ENDPOINT: http://otel.collector:4317
+      OTEL_LOGS_EXPORTER: otlp
+      OTEL_TRACES_EXPORTER: otlp
+      OTEL_METRICS_EXPORTER: otlp
+      GRADLE_HOME: /usr/app
     ports:
       - 8080:8080
   otel.collector:
-    image: otel/opentelemetry-collector-contrib:0.60.0
+    image: otel/opentelemetry-collector-contrib:0.70.0
     volumes:
       - ./otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
     ports:
@@ -58,7 +64,7 @@ services:
     ports:
       - 9090:9090
   grafana.loki:
-    image: grafana/loki:2.6.0
+    image: grafana/loki:2.7.2
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml

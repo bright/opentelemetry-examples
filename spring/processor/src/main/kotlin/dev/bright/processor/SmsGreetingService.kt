@@ -12,10 +12,6 @@ class SmsGreetingService(
 ) {
     @Bean
     fun greetRecipientWithSms() = { greetedRecipientEvent: GreetedRecipientEvent ->
-
-        val sender = Baggage.current().getEntryValue("sender")
-        Span.current().setAttribute("sender", sender!!)
-
         smsClient.send(
             SmsClient.Sms(
                 recipient = greetedRecipientEvent.recipient,

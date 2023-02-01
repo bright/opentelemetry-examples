@@ -19,10 +19,21 @@ processors:
     attributes:
       - action: insert
         key: loki.resource.labels
-        value: service.name
+        value: service_name
       - action: insert
         key: loki.resource.labels
-        value: host.name
+        value: host_name
+
+  attributes/database-service-tag:
+    include:
+      match_type: regexp
+      attributes:
+        - key: db.name
+          value: .*
+    actions:
+      - key: peer.service
+        action: insert
+        from_attribute: db.name
 
 exporters:
   prometheus:
@@ -60,12 +71,12 @@ service:
   pipelines:
     traces:
       receivers: [ otlp ]
-      processors: [ batch ]
-      exporters: [ otlp ]
+      processors: [ attributes/database-service-tag ]
+      exporters: [ logging, otlp ]
     metrics:
       receivers: [ otlp ]
-      processors: [ ]
-      exporters: [ logging, prometheus]
+      processors: [ batch ]
+      exporters: [ prometheus ]
     logs:
       receivers: [ otlp ]
       processors: [ attributes, resource ]
