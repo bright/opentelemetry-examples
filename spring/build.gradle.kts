@@ -1,8 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.0"
-    kotlin("plugin.spring") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.spring") version "1.8.20"
 }
 
 group = "dev.bright"
